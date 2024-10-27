@@ -5,6 +5,7 @@ import com.rishiraj.bitbybit.implementations.UserDetailServiceImpl;
 import com.rishiraj.bitbybit.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -148,10 +149,12 @@ public class SpringSecurityConfig {
 
      */
 
+    @Value("${frontend}")
+    private String frontend;
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Allow your frontend's origin
+        configuration.setAllowedOrigins(List.of(frontend)); // Allow your frontend's origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow these methods
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Allow headers
         configuration.setAllowCredentials(true); // Allow cookies or credentials

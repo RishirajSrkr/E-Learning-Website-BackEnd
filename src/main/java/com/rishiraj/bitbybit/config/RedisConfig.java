@@ -1,5 +1,6 @@
 package com.rishiraj.bitbybit.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -14,14 +15,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
+    @Value("${spring.redis.host}")
+    private String redisHost;
+    @Value("${spring.redis.port}")
+    private int redisPort;
+    @Value("${spring.redis.password}")
+    private String redisPassword;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName("redis-12716.c212.ap-south-1-1.ec2.redns.redis-cloud.com");
-        config.setPort(12716);
-        config.setPassword(RedisPassword.of("q4PCoaO5ZAshNoKpI3YcuV9iDwzKCLwC"));
+        config.setHostName(redisHost);
+        config.setPort(redisPort);
+        config.setPassword(RedisPassword.of(redisPassword));
         return new JedisConnectionFactory(config);
     }
+
 
 
     @Bean
