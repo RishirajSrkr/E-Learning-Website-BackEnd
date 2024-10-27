@@ -1,8 +1,11 @@
-# Use the official Maven image with JDK 21
-FROM maven:3.8.6-openjdk-21-slim AS builder
+# Use the official JDK 21 slim image from the Docker Hub
+FROM openjdk:21-jdk-slim
 
 # Set the working directory in the container
 WORKDIR /app
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && apt-get clean
 
 # Copy the pom.xml and download dependencies
 COPY pom.xml .
@@ -14,17 +17,8 @@ COPY . .
 # Package the application
 RUN mvn clean package -DskipTests
 
-# Use the official JDK image for the final stage
-FROM openjdk:21-jdk-slim
-
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy the packaged jar from the builder stage
-COPY --from=builder /app/target/bitbybit-0.0.1-SNAPSHOT.jar bitbybit-0.0.1-SNAPSHOT.jar
-
 # Expose the port the app runs on
 EXPOSE 8080
 
 # Command to run the application
-CMD ["java", "-jar", "bitbybit-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/bitbybit-0.0.1-SNAPSHOT.jar"]
