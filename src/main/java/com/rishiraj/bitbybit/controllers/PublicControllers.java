@@ -56,6 +56,7 @@ public class PublicControllers {
         this.courseRepository = courseRepository;
     }
 
+
     @GetMapping("/health-check")
     public ResponseEntity<String> healthCheck() {
         return new ResponseEntity<>("Health Check :: OK", HttpStatus.OK);

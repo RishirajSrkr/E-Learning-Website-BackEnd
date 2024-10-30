@@ -6,13 +6,9 @@ import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.UserRepository;
 import com.rishiraj.bitbybit.services.UserService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +30,8 @@ public class UserServicesImpl implements UserService {
         this.userRepository = userRepository;
         this.courseServices = courseServices;
     }
+
+
 
 
     // this is for creating a user

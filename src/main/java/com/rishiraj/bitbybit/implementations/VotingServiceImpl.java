@@ -7,18 +7,23 @@ import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.CourseRepository;
 import com.rishiraj.bitbybit.repositories.UserRepository;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class VotingServiceImpl {
 
+    private static final Logger log = LoggerFactory.getLogger(VotingServiceImpl.class);
     private final RedisTemplate<String, Object> redisTemplate;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
@@ -60,8 +65,9 @@ public class VotingServiceImpl {
         return Boolean.TRUE.equals(redisTemplate.hasKey(userVoteKey));
     }
 
-    public void persistVotesToDatabase() {
 
+    @Scheduled(fixedRate = 300000)
+    public void persistVotesToDatabase() {
 
         // Fetch all course votes from Redis and save them to the database
         Map<Object, Object> voteMap = redisTemplate.opsForHash().entries("courseVotes");
@@ -71,8 +77,11 @@ public class VotingServiceImpl {
             courseRepository.save(course);
         });
 
+        log.info("Saved to database :: {} ", LocalDateTime.now());
+
         //once all the course vote data is updated in DB, delete the key whose value was the vote count
         redisTemplate.delete("courseVotes");
     }
+
 
 }
