@@ -66,7 +66,7 @@ public class VotingServiceImpl {
     }
 
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 60000)
     public void persistVotesToDatabase() {
 
         // Fetch all course votes from Redis and save them to the database
