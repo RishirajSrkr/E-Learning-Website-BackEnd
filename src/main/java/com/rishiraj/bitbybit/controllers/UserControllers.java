@@ -1,25 +1,21 @@
 package com.rishiraj.bitbybit.controllers;
 
+import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
+import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.UserUpdateDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
-import com.rishiraj.bitbybit.implementations.UserDetailServiceImpl;
 import com.rishiraj.bitbybit.implementations.UserServicesImpl;
 import com.rishiraj.bitbybit.repositories.UserRepository;
-import com.rishiraj.bitbybit.utils.JwtUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.HTML;
 import java.util.*;
 
 
@@ -40,21 +36,21 @@ public class UserControllers {
     }
 
 
-    /* create a new user */
-    @PostMapping("/register")
-    public ResponseEntity<User> createUser(@RequestBody User user) throws Exception {
-        log.info("user {} ", user);
-        User newUser = userServices.createUser(user);
-        return new ResponseEntity<>(newUser, HttpStatus.OK);
-    }
+    /* get logged-in user info --- we need this after login to fetch the user specific info and store in context */
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> getUserById() {
+        log.info("called");
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
 
-    /* get user by user ID */
-    @GetMapping("/id/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable ObjectId userId) {
-        Optional<User> user = userServices.getUserById(userId);
-        if (user.isPresent()) {
-            return new ResponseEntity<>(user.get(), HttpStatus.FOUND);
-        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        UserDto userResponseToSendClient = UserDto.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .profileImage(user.getProfileImageUrl())
+                .build();
+        log.info("userResponseToSendClient :: {}", userResponseToSendClient);
+        return new ResponseEntity<>(userResponseToSendClient, HttpStatus.OK);
+
     }
 
     /* only a logged-in user can delete their account
@@ -77,15 +73,14 @@ public class UserControllers {
      */
     @GetMapping("/userId/{userId}/uploaded-courses")
     public ResponseEntity<?> getCoursesUploadedByUser(@PathVariable ObjectId userId) {
-        try{
+        try {
             log.info("user id ----- {} ", userId);
             List<Course> allCoursesUploadedByUser = userServices.getAllCoursesUploadedByUser(userId);
-            if(allCoursesUploadedByUser.isEmpty()){
+            if (allCoursesUploadedByUser.isEmpty()) {
                 return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
             }
             return new ResponseEntity<>(allCoursesUploadedByUser, HttpStatus.OK);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Exception while trying to fetch user uploaded courses.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -101,6 +96,20 @@ public class UserControllers {
         String email = authentication.getName();
         List<Course> allCoursesUploadedByUser = userServices.getAllCoursesEnrolledByUser(email);
         return new ResponseEntity<>(allCoursesUploadedByUser, HttpStatus.OK);
+    }
+
+
+    @PutMapping("/update-profile")
+    public ResponseEntity<String> updateUserData(@RequestBody UserUpdateDto userUpdateDto) {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
+
+            userServices.updateUserData(user, userUpdateDto);
+            return new ResponseEntity<>("Updated Successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

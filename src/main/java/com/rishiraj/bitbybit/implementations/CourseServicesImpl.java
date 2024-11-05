@@ -90,7 +90,7 @@ public class CourseServicesImpl implements CourseServices {
         //upload image to cloudinary and get the URL
         String imageUrl = null;
         if (courseImage != null && !courseImage.isEmpty()) {
-            Map uploadResult = imageUploadService.uploadImage(courseImage);
+            Map uploadResult = imageUploadService.uploadFile(courseImage);
             imageUrl = (String) uploadResult.get("url");
 
             log.info("----------------------------------------");

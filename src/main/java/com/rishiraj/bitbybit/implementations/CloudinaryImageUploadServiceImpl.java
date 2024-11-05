@@ -19,7 +19,7 @@ public class CloudinaryImageUploadServiceImpl {
     private Cloudinary cloudinary;
 
 
-    public Map uploadImage(MultipartFile file) throws IOException {
+    public Map uploadFile(MultipartFile file) throws IOException {
 
         log.info("----------------------------------------");
         log.info("Multipart file {} ", file);

@@ -1,7 +1,10 @@
 package com.rishiraj.bitbybit.implementations;
 
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
+import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
+import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.UserUpdateDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.UserRepository;
@@ -9,10 +12,15 @@ import com.rishiraj.bitbybit.services.UserService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,46 +31,82 @@ public class UserServicesImpl implements UserService {
     private static final Logger log = LoggerFactory.getLogger(UserServicesImpl.class);
     private final UserRepository userRepository;
     private final CourseServicesImpl courseServices;
+    private final CloudinaryImageUploadServiceImpl imageUploadService;
+
+
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    public UserServicesImpl(UserRepository userRepository, CourseServicesImpl courseServices) {
+    public UserServicesImpl(UserRepository userRepository, CourseServicesImpl courseServices, CloudinaryImageUploadServiceImpl imageUploadService) {
         this.userRepository = userRepository;
         this.courseServices = courseServices;
+        this.imageUploadService = imageUploadService;
     }
-
-
 
 
     // this is for creating a user
-    public User createUser(User user) throws Exception {
-        Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
-        if(optionalUser.isEmpty()){
-            try{
-                //hashing the password
-                user.setPassword(passwordEncoder.encode(user.getPassword()));
-                //set default role
-                user.getRoles().add("USER");
-                userRepository.save(user);
-                return user;
-            }
-            catch (Exception e){
-                throw new Exception();
-            }
+    public User createUser(RegisterUserDto registerUserDto, MultipartFile profileImage) throws Exception {
+
+        Optional<User> optionalUser = userRepository.findByEmail(registerUserDto.getEmail());
+
+        if (optionalUser.isPresent()) {
+            throw new UserCreationException("User already exists");
         }
-        else{
-            //it means a user with the email already exists
-            throw new UserCreationException("Email already exists");
+
+        try {
+            //creating a user object from registerUserDto
+
+            User newUser = User.builder()
+                    .name(registerUserDto.getName())
+                    .email(registerUserDto.getEmail())
+                    .bio(registerUserDto.getBio())
+                    .password(passwordEncoder.encode(registerUserDto.getPassword()))
+                    .roles(Set.of("USER"))
+                    .build();
+
+
+            //upload profile image to cloudinary and get the URL
+            String imageUrl = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                Map uploadResult = imageUploadService.uploadFile(profileImage);
+                imageUrl = (String) uploadResult.get("url");
+
+
+            }
+
+            newUser.setProfileImageUrl(imageUrl);
+            userRepository.save(newUser);
+
+            log.info("saved user {}", newUser);
+
+            return newUser;
+
+        } catch (Exception e) {
+            throw new Exception();
         }
+
+
     }
 
-    //for updating a user
-    public void updateUser(User user) throws UsernameNotFoundException {
-        try {
-            userRepository.save(user);
-        } catch (Exception e) {
-            log.error("error while updating user: ", e);
+
+    //update a user details
+    public void updateUserData(User user, UserUpdateDto userUpdateDto) {
+
+        log.info("not updated user :: {} ", user);
+
+
+        user.setName(userUpdateDto.getName() != null && !userUpdateDto.getName().isEmpty() ? userUpdateDto.getName() : user.getName());
+        user.setEmail(userUpdateDto.getEmail() != null && !userUpdateDto.getEmail().isEmpty() ? userUpdateDto.getEmail() : user.getEmail());
+        user.setBio(userUpdateDto.getBio() != null && !userUpdateDto.getBio().isEmpty() ? userUpdateDto.getBio() : user.getBio());
+
+        //hash the password before saving
+        if (userUpdateDto.getPassword() != null && !userUpdateDto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(userUpdateDto.getPassword()));
         }
+
+        userRepository.save(user);
+        log.info("update user :: {} ", user);
+
     }
 
 
@@ -107,6 +151,7 @@ public class UserServicesImpl implements UserService {
                 .email(user.getEmail())
                 .bio(user.getBio())
                 .uploadedCourse(user.getUploadedCourse().size())
+                .profileImage(user.getProfileImageUrl())
                 .build()).collect(Collectors.toList());
 
     }

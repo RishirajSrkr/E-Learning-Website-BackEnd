@@ -1,7 +1,9 @@
 package com.rishiraj.bitbybit.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
+import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
@@ -27,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.swing.*;
 import java.util.*;
@@ -47,7 +50,6 @@ public class PublicControllers {
     private CourseServicesImpl courseServices;
 
 
-
     public PublicControllers(UserServicesImpl userServices, JwtUtils jwtUtils, AuthenticationManager authenticationManager, UserDetailServiceImpl userDetailService, CourseRepository courseRepository) {
         this.userServices = userServices;
         this.jwtUtils = jwtUtils;
@@ -62,18 +64,30 @@ public class PublicControllers {
         return new ResponseEntity<>("Health Check :: OK", HttpStatus.OK);
     }
 
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user) throws Exception {
-       try{
-           User creaedUser = userServices.createUser(user);
-           return new ResponseEntity<>(creaedUser, HttpStatus.OK);
-       }
-       catch (UserCreationException e){
-           return new ResponseEntity<>("Email already exists.", HttpStatus.BAD_REQUEST);
-       }
-       catch (Exception e){
-           return new ResponseEntity<>("An error occurred during registration.", HttpStatus.INTERNAL_SERVER_ERROR);
-       }
+    public ResponseEntity<?> register(
+            @Valid
+            @RequestPart("registerUserDto") String registerUserDtoJson,
+            @RequestPart(value = "file") MultipartFile userProfileImage
+    ) throws Exception {
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            RegisterUserDto registerUserDto = objectMapper.readValue(registerUserDtoJson, RegisterUserDto.class);
+            User createdUser = userServices.createUser(registerUserDto, userProfileImage);
+
+            log.info("----------------------------------------");
+            log.info("Created User :: {} ", createdUser);
+            log.info("----------------------------------------");
+
+
+            return new ResponseEntity<>(createdUser, HttpStatus.OK);
+        } catch (UserCreationException e) {
+            return new ResponseEntity<>("Email already exists.", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
@@ -180,7 +194,7 @@ public class PublicControllers {
             List<UserDto> allContributors = userServices.getAllContributor();
 
             Map<String, UserDto> response = new HashMap<>();
-            for(UserDto user : allContributors){
+            for (UserDto user : allContributors) {
                 response.put(user.getUserId().toString(), user);
             }
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -191,31 +205,28 @@ public class PublicControllers {
 
 
     @PostMapping("/incrementEnrolls")
-    public ResponseEntity<String> incrementCourseEnrolls(@PathVariable ObjectId courseId){
+    public ResponseEntity<String> incrementCourseEnrolls(@PathVariable ObjectId courseId) {
 
-        try{
+        try {
             courseServices.incrementNumberOfEnrolls(courseId);
             return new ResponseEntity<>("Incremented Successfully.", HttpStatus.OK);
-        }
-        catch (CourseNotFoundException e){
+        } catch (CourseNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
-     /*
-    GET TOP VOTED COURSE -- TOP 3
-     */
+    /*
+   GET TOP VOTED COURSE -- TOP 3
+    */
     @GetMapping("/top-voted")
-    public ResponseEntity<List<Course>> getTopVotedCourses(){
-        try{
+    public ResponseEntity<List<Course>> getTopVotedCourses() {
+        try {
             List<Course> topVotedCourses = courseServices.getTopVotedCourses();
             return new ResponseEntity<>(topVotedCourses, HttpStatus.OK);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }

@@ -17,4 +17,5 @@ public class UserDto {
     private String email;
     private String bio;
     private int uploadedCourse;
+    private String profileImage;
 }

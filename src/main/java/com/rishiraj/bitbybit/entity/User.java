@@ -31,8 +31,9 @@ public class User {
     @Indexed(unique = true)
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email cannot be blank")
-
     private String email;
+
+    private String profileImageUrl;
 
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 4,  message = "Password must be at least 4 characters long")
