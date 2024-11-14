@@ -235,9 +235,7 @@ public class CourseServicesImpl implements CourseServices {
         }
 
         //add this user to the course's enrolledBy List
-        List<User> enrolledBy = enrolledCourse.getEnrolledBy();
-        enrolledBy.add(user);
-        enrolledCourse.setEnrolledBy(enrolledBy);
+        enrolledCourse.getEnrolledBy().add(user);
         courseRepository.save(enrolledCourse);
 
     }

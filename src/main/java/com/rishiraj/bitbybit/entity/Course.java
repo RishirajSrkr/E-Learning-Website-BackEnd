@@ -42,7 +42,7 @@ public class Course implements Comparable<Course> {
     private int numberOfEnrolls;
 
     @DBRef
-    private List<User> enrolledBy = new ArrayList<>();
+    private List<User> enrolledBy;
 
     private LocalDateTime createdAt;
 

@@ -20,5 +20,5 @@ RUN mvn clean package -DskipTests
 # Expose the port the app runs on
 EXPOSE 8080
 
-# Command to run the application
+# Command to run the application.
 CMD ["java", "-jar", "target/bitbybit-0.0.1-SNAPSHOT.jar"]
