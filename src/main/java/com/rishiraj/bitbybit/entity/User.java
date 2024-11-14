@@ -54,5 +54,8 @@ public class User {
     private Set<String> roles = new HashSet<>();
 
     @DBRef
-    public List<Course> votedCourses = new ArrayList<>();
+    private List<Course> votedCourses = new ArrayList<>();
+
+    //total votes the user has got in his uploaded courses.
+    private int totalVotes;
 }

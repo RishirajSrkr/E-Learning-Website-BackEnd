@@ -1,8 +1,9 @@
 package com.rishiraj.bitbybit.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
+import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.UserDto;
-import com.rishiraj.bitbybit.dto.UserUpdateDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.implementations.UserServicesImpl;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -39,7 +41,6 @@ public class UserControllers {
     /* get logged-in user info --- we need this after login to fetch the user specific info and store in context */
     @GetMapping("/profile")
     public ResponseEntity<UserDto> getUserById() {
-        log.info("called");
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
 
@@ -47,6 +48,9 @@ public class UserControllers {
                 .name(user.getName())
                 .email(user.getEmail())
                 .profileImage(user.getProfileImageUrl())
+                .bio(user.getBio())
+                .uploadedCourses(user.getUploadedCourse().size())
+                .enrolledCourses(user.getEnrolledCourses().size())
                 .build();
         log.info("userResponseToSendClient :: {}", userResponseToSendClient);
         return new ResponseEntity<>(userResponseToSendClient, HttpStatus.OK);
@@ -100,14 +104,43 @@ public class UserControllers {
 
 
     @PutMapping("/update-profile")
-    public ResponseEntity<String> updateUserData(@RequestBody UserUpdateDto userUpdateDto) {
+    public ResponseEntity<String> updateUserData(
+            @RequestPart(value = "registerUserDto", required = false) String registerUserDtoJson,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        log.info("here");
+
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            RegisterUserDto registerUserDto = objectMapper.readValue(registerUserDtoJson, RegisterUserDto.class);
+
+            log.info("registerUserDto :: {} ", registerUserDto);
+            log.info("image :: {} ", file);
+
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
 
-            userServices.updateUserData(user, userUpdateDto);
+            userServices.updateUserData(user, registerUserDto, file);
             return new ResponseEntity<>("Updated Successfully", HttpStatus.OK);
         } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /*
+    total number of votes a user has got
+     */
+    @GetMapping("/total-votes")
+    public ResponseEntity<Integer> totalVote(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
+
+        try{
+            Integer totalVotes = userServices.totalVote(user);
+            return new ResponseEntity<>(totalVotes, HttpStatus.OK);
+        }
+        catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

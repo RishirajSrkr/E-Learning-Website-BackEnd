@@ -41,6 +41,9 @@ public class Course implements Comparable<Course> {
 
     private int numberOfEnrolls;
 
+    @DBRef
+    private List<User> enrolledBy = new ArrayList<>();
+
     private LocalDateTime createdAt;
 
     // to store the list of chapters of this course

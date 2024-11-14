@@ -216,6 +216,23 @@ public class CourseControllers {
         }
     }
 
+    /*
+    get list of users who have enrolled this course
+     */
+    @GetMapping("/{courseId}/enrolled-users")
+    public ResponseEntity<List<User>> getUsersThatEnrolledACourse(@PathVariable ObjectId courseId){
+        log.info("Course id :: {} ", courseId);
+       try{
+           List<User> usersThatEnrolledACourse = courseServices.getUsersThatEnrolledACourse(courseId);
+           return new ResponseEntity<>(usersThatEnrolledACourse, HttpStatus.OK);
+       }
+       catch (CourseNotFoundException e){
+           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+       }
+       catch (Exception e){
+           return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+       }
+    }
 
 
 }

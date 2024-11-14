@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -37,6 +38,8 @@ public class VotingServiceImpl {
     public void voteCourse(ObjectId courseId) {
 
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new CourseNotFoundException("Course with ID: " + courseId + " not found"));
+        ObjectId createdBy = course.getCreatedBy();
+
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email : " + email + " not found"));
@@ -48,6 +51,9 @@ public class VotingServiceImpl {
         // Increment the vote count in Redis for the course
         redisTemplate.opsForHash().increment("courseVotes", courseId.toHexString(), 1);
 
+        //Increment the total vote count in Redis for the user
+        redisTemplate.opsForHash().increment("userTotalVotes", createdBy.toHexString(), 1);
+
         // Track the user's vote and set TTL for 24 hours (each user's vote tracked individually)
         String userVoteKey = "userVote:" + courseId.toHexString() + ":" + user.getId().toHexString();
 
@@ -56,6 +62,7 @@ public class VotingServiceImpl {
 
         //add the course in users votedCourse list
         user.getVotedCourses().add(course);
+
         userRepository.save(user);
 
     }
@@ -77,10 +84,17 @@ public class VotingServiceImpl {
             courseRepository.save(course);
         });
 
+        Map<Object, Object> userTotalVoteMap = redisTemplate.opsForHash().entries("userTotalVotes");
+        userTotalVoteMap.forEach((key, value) -> {
+            User user = userRepository.findById(new ObjectId(key.toString())).orElseThrow();
+            user.setTotalVotes((Integer)value);
+            userRepository.save(user);
+        });
+
         log.info("Saved to database :: {} ", LocalDateTime.now());
 
-        //once all the course vote data is updated in DB, delete the key whose value was the vote count
-        redisTemplate.delete("courseVotes");
+        redisTemplate.delete(List.of("courseVotes", "userTotalVotes"));
+
     }
 
 

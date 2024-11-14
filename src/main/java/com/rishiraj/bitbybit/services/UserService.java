@@ -1,9 +1,7 @@
 package com.rishiraj.bitbybit.services;
 
-import com.rishiraj.bitbybit.customExceptions.UserCreationException;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.UserDto;
-import com.rishiraj.bitbybit.dto.UserUpdateDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import org.bson.types.ObjectId;
@@ -14,7 +12,7 @@ import java.util.Optional;
 
 
 public interface UserService {
-    void updateUserData (User user, UserUpdateDto userUpdateDto) throws Exception;
+    void updateUserData (User user, RegisterUserDto registerUserDto, MultipartFile file) throws Exception;
 
     Optional<User> getUserById(ObjectId userId);
 

@@ -233,6 +233,13 @@ public class CourseServicesImpl implements CourseServices {
             user.getEnrolledCourses().add(enrolledCourse);
             userRepository.save(user);
         }
+
+        //add this user to the course's enrolledBy List
+        List<User> enrolledBy = enrolledCourse.getEnrolledBy();
+        enrolledBy.add(user);
+        enrolledCourse.setEnrolledBy(enrolledBy);
+        courseRepository.save(enrolledCourse);
+
     }
 
 
@@ -290,4 +297,12 @@ public class CourseServicesImpl implements CourseServices {
         userRepository.save(user);
     }
 
+
+    /*
+    get list of users who have enrolled a course
+     */
+    public List<User> getUsersThatEnrolledACourse(ObjectId courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new CourseNotFoundException("Course with ID :: " + courseId + "not found"));
+        return course.getEnrolledBy();
+    }
 }
