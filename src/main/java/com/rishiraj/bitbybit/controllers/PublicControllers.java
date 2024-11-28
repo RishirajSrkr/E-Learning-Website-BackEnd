@@ -195,6 +195,8 @@ public class PublicControllers {
             for (UserDto user : allContributors) {
                 response.put(user.getUserId().toString(), user);
             }
+
+            log.info("response {} ", response);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
