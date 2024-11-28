@@ -2,8 +2,9 @@ package com.rishiraj.bitbybit.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
+import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
-import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.implementations.UserServicesImpl;
@@ -49,8 +50,7 @@ public class UserControllers {
                 .email(user.getEmail())
                 .profileImage(user.getProfileImageUrl())
                 .bio(user.getBio())
-                .uploadedCourses(user.getUploadedCourse().size())
-                .enrolledCourses(user.getEnrolledCourses().size())
+                .uploadedCourses(user.getUploadedCourses().size())
                 .build();
         log.info("userResponseToSendClient :: {}", userResponseToSendClient);
         return new ResponseEntity<>(userResponseToSendClient, HttpStatus.OK);
@@ -89,18 +89,6 @@ public class UserControllers {
         }
     }
 
-
-    /*
-    this can only be accessed by the logged-in user, which means a user can see only his enrolled courses.
-    so we don't need to pass user Id, we can take the user info out from authentication object
-     */
-    @GetMapping("/enrolled-courses")
-    public ResponseEntity<List<Course>> getCoursesEnrolledByUser() throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        List<Course> allCoursesUploadedByUser = userServices.getAllCoursesEnrolledByUser(email);
-        return new ResponseEntity<>(allCoursesUploadedByUser, HttpStatus.OK);
-    }
 
 
     @PutMapping("/update-profile")

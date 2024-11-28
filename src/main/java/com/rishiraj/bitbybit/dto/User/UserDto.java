@@ -1,4 +1,4 @@
-package com.rishiraj.bitbybit.dto;
+package com.rishiraj.bitbybit.dto.User;
 
 /*
 this dto is needed for 'show all user' in frontend

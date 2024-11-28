@@ -1,14 +1,19 @@
 package com.rishiraj.bitbybit.implementations;
 
-import com.rishiraj.bitbybit.customExceptions.AlreadyVotedException;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
-import com.rishiraj.bitbybit.dto.CourseDto;
+import com.rishiraj.bitbybit.dto.ChapterDto;
+import com.rishiraj.bitbybit.dto.Course.CourseDto;
+import com.rishiraj.bitbybit.dto.Course.CourseDtoWithEnrolledUsers;
+import com.rishiraj.bitbybit.dto.User.UserDto;
+import com.rishiraj.bitbybit.dto.User.UserWithCoursesDto;
 import com.rishiraj.bitbybit.entity.Chapter;
 import com.rishiraj.bitbybit.entity.Course;
+import com.rishiraj.bitbybit.entity.Enrollment;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.ChapterRepository;
 import com.rishiraj.bitbybit.repositories.CourseRepository;
+import com.rishiraj.bitbybit.repositories.EnrollmentRepository;
 import com.rishiraj.bitbybit.repositories.UserRepository;
 import com.rishiraj.bitbybit.services.CourseServices;
 import org.bson.types.ObjectId;
@@ -25,6 +30,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CourseServicesImpl implements CourseServices {
@@ -34,6 +40,10 @@ public class CourseServicesImpl implements CourseServices {
     private final UserRepository userRepository;
     private final ChapterRepository chapterRepository;
     private final CloudinaryImageUploadServiceImpl imageUploadService;
+    @Autowired
+    private EnrollmentService enrollmentService;
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
 
     public CourseServicesImpl(CourseRepository courseRepository, UserRepository userRepository, ChapterRepository chapterRepository, CloudinaryImageUploadServiceImpl imageUploadService) {
         this.courseRepository = courseRepository;
@@ -55,29 +65,13 @@ public class CourseServicesImpl implements CourseServices {
 
     public List<Course> getAllCourseUploadedByUser(ObjectId userId) throws Exception {
         try {
-            List<Course> allCourses = courseRepository.findAll();
-            List<Course> coursesUploadedByUser;
-            coursesUploadedByUser = allCourses.stream()
-                    .filter(course -> course.getCreatedBy().equals(userId))
-                    .collect(Collectors.toList());
+            return courseRepository.findAll().stream().filter(course -> course.getCreatedBy().equals(userId)).collect(Collectors.toList());
 
-            return coursesUploadedByUser;
         } catch (Exception e) {
             throw new Exception();
         }
 
     }
-
-    /* GET THE COURSES ENROLLED BY A USER */
-
-    public List<Course> getAllCoursesEnrolledByUser(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (userOptional.isPresent()) {
-            return userOptional.get().getEnrolledCourses();
-        }
-        return Collections.emptyList();
-    }
-
 
 
     /* CREATE A NEW COURSE */
@@ -107,7 +101,7 @@ public class CourseServicesImpl implements CourseServices {
                 .createdAt(LocalDateTime.now())
                 .createdBy(user.getId())
                 .instructorName(user.getName())
-                .vote(0)
+                .votes(0)
                 .numberOfEnrolls(0)
                 .imageUrl(imageUrl)
                 .build();
@@ -119,7 +113,7 @@ public class CourseServicesImpl implements CourseServices {
         adding the course to user's uploaded course List
         updating the user
          */
-        user.getUploadedCourse().add(savedCourse);
+        user.getUploadedCourses().add(savedCourse);
         userRepository.save(user);
 
 
@@ -216,91 +210,93 @@ public class CourseServicesImpl implements CourseServices {
     }
 
 
-
-    /* ADD COURSE TO ENROLLED COURSE LIST */
-
-    @Transactional
-    public void addCourseToUsersEnrolledCourses(ObjectId courseId, String userEmail) throws CourseNotFoundException, UserNotFoundException {
-
-        Course enrolledCourse = findCourseById(courseId)
-                .orElseThrow(() -> new CourseNotFoundException("Course not found with the ID: " + courseId));
-
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UserNotFoundException("User not found with the email: " + userEmail));
-
-        //check if user is already enrolled
-        if (!user.getEnrolledCourses().contains(enrolledCourse)) {
-            user.getEnrolledCourses().add(enrolledCourse);
-            userRepository.save(user);
-        }
-
-        //add this user to the course's enrolledBy List
-        enrolledCourse.getEnrolledBy().add(user);
-        courseRepository.save(enrolledCourse);
-
-    }
-
-
     /* GET ALL COURSES
     If a user is logged in and has uploaded some course or some enrolled courses, do not show those courses in 'all courses'
     If a user is not logged in than show all courses here
      */
-    public List<Course> getAllCourses(String email) throws Exception {
+    public List<Course> getAllCourses(User user) throws Exception {
 
         List<Course> allCourses = courseRepository.findAll();
-        /*
-        if email is null, it means no user is logged-in, so show all courses to the user
-         */
-        if (email.equals("anonymousUser")) {
-            return allCourses;
-        }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found"));
+        //removing the courses uploaded by the user
+        List<Course> filteredCourses = allCourses.stream().filter(courses -> !courses.getCreatedBy().equals(user.getId())).collect(Collectors.toList());
 
-        List<Course> coursesUploadedByUser = allCourses.stream().filter(course -> course.getCreatedBy().equals(user.getId())).collect(Collectors.toList());
+        //removing the courses enrolled by the user
+        List<Course> coursesEnrolledByTheUser = enrollmentRepository.findAll().stream().filter(enrollment -> enrollment.getUser().getId().equals(user.getId())).map(enrollment -> enrollment.getCourse()).collect(Collectors.toList());
+        filteredCourses.removeAll(coursesEnrolledByTheUser);
 
-        //removing courses uploaded by the user
-        allCourses.removeAll(coursesUploadedByUser);
-
-        //removing courses enrolled by the user
-        allCourses.removeAll(getAllCoursesEnrolledByUser(email));
-
-        return allCourses;
-
-
+        return filteredCourses;
     }
 
 
     /*
     TOP 3 VOTED COURSES
      */
-    public List<Course> getTopVotedCourses(){
+    public List<Course> getTopVotedCourses() {
         int count = 3;
         List<Course> allCourses = courseRepository.findAll();
         Collections.sort(allCourses);
-        List<Course> topVotedCourses = allCourses.subList(0, 3);
-        return topVotedCourses;
+
+        //if there are less than 2 courses in database, return all 2 without doing "subList(0,3)
+        if (allCourses.size() < 3) return allCourses;
+
+        //else return top 3, i.e. subList(0,3)
+        return allCourses.subList(0, 3);
     }
 
 
-    /*
-    REMOVE ENROLLED COURSE
-     */
-    public void removeEnrolledCourse(ObjectId courseId){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email : " + email + " not found"));
-        List<Course> collect = user.getEnrolledCourses().stream().filter(course -> !course.getId().equals(courseId)).collect(Collectors.toList());
-        user.setEnrolledCourses(collect);
-        userRepository.save(user);
+    public CourseDto convertToCourseDto(Course course) {
+
+        return CourseDto.builder()
+                .courseName(course.getCourseName())
+                .courseDescription(course.getCourseDescription())
+                .courseCategory(course.getCourseCategory())
+                .chapters(course.getChapters().stream()
+                        .map(chapter -> ChapterDto.builder()
+                                .chapterName(chapter.getChapterName())
+                                .chapterContent(chapter.getChapterContent())
+                                .courseId(chapter.getCourseId())
+                                .build()
+                        ).collect(Collectors.toList()))
+                .build();
     }
 
+    public CourseDtoWithEnrolledUsers convertToCourseWithEnrolledUsersDto(Course course) {
 
-    /*
-    get list of users who have enrolled a course
-     */
-    public List<User> getUsersThatEnrolledACourse(ObjectId courseId) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new CourseNotFoundException("Course with ID :: " + courseId + "not found"));
-        return course.getEnrolledBy();
+        return CourseDtoWithEnrolledUsers.builder()
+                .courseName(course.getCourseName())
+                .courseDescription(course.getCourseDescription())
+                .courseCategory(course.getCourseCategory())
+                .createdAt(course.getCreatedAt())
+                .createdBy(course.getCreatedBy())
+                .courseImage(course.getImageUrl())
+                .votes(course.getVotes())
+                .chapters(course.getChapters())
+//                .enrolledBy(course.getEnrolledBy().stream().map(user -> convertToUserDto(user)).collect(Collectors.toList()))
+                .build();
     }
+
+    private UserDto convertToUserDto(User user) {
+
+        return UserDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .bio(user.getBio())
+                .profileImage(user.getProfileImageUrl())
+                .build();
+
+    }
+
+    public UserWithCoursesDto convertToUserWithCourseDto(User user) {
+        return UserWithCoursesDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .bio(user.getBio())
+                .profileImage(user.getProfileImageUrl())
+                .uploadedCourses(user.getUploadedCourses().stream().map(course -> convertToCourseDto(course)).collect(Collectors.toList()))
+                .build();
+    }
+
 }

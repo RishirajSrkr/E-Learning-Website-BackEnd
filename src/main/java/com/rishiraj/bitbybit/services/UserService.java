@@ -1,7 +1,8 @@
 package com.rishiraj.bitbybit.services;
 
+import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
-import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import org.bson.types.ObjectId;
@@ -20,9 +21,6 @@ public interface UserService {
 
     void deleteUserById(ObjectId userId);
 
-    List<Course> getAllCoursesUploadedByUser(ObjectId userId) throws Exception;
-
-    List<Course> getAllCoursesEnrolledByUser(String email) throws Exception;
 
     User createUser(RegisterUserDto registerUserDto, MultipartFile profileImage) throws Exception;
 

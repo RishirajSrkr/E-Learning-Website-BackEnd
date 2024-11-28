@@ -1,5 +1,6 @@
 package com.rishiraj.bitbybit.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -43,12 +44,8 @@ public class User {
     @NotBlank(message = "Please write something about yourself")
     private String bio;
 
-    //storing the courses enrolled by the user
     @DBRef
-    private List<Course> enrolledCourses = new ArrayList<>();
-
-    @DBRef
-    private List<Course> uploadedCourse = new ArrayList<>();
+    private List<Course> uploadedCourses = new ArrayList<>();
 
     //using set to prevent duplicate roles
     private Set<String> roles = new HashSet<>();

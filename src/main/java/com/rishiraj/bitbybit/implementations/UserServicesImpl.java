@@ -1,8 +1,9 @@
 package com.rishiraj.bitbybit.implementations;
 
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
+import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
-import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.UserRepository;
@@ -129,12 +130,6 @@ public class UserServicesImpl implements UserService {
         return courseServices.getAllCourseUploadedByUser(userId);
     }
 
-    //get all the courses that are enrolled by the user
-    public List<Course> getAllCoursesEnrolledByUser(String email) throws Exception {
-        return courseServices.getAllCoursesEnrolledByUser(email);
-    }
-
-
     /*
     get all users / contributors
      */
@@ -142,7 +137,7 @@ public class UserServicesImpl implements UserService {
         /*
         getting those users who have at least uploaded one course / content
          */
-        List<User> usersWithUploads = userRepository.findAll().stream().filter(user -> user.getUploadedCourse().size() >= 1).collect(Collectors.toList());
+        List<User> usersWithUploads = userRepository.findAll().stream().filter(user -> user.getUploadedCourses().size() >= 1).collect(Collectors.toList());
 
         /*
         converting the above data into our need, we don't want to return all the fields of actual user class, so we use a DTO
@@ -152,8 +147,7 @@ public class UserServicesImpl implements UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .bio(user.getBio())
-                .uploadedCourses(user.getUploadedCourse().size())
-                .enrolledCourses(user.getEnrolledCourses().size())
+                .uploadedCourses(user.getUploadedCourses().size())
                 .profileImage(user.getProfileImageUrl())
                 .build()).collect(Collectors.toList());
 
@@ -164,8 +158,8 @@ public class UserServicesImpl implements UserService {
     total number of votes a user has got
      */
     public Integer totalVote(User user) {
-        return user.getUploadedCourse().stream()
-                .mapToInt(course -> course.getVote())
+        return user.getUploadedCourses().stream()
+                .mapToInt(course -> course.getVotes())
                 .sum();
     }
 }

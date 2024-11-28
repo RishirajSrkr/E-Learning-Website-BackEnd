@@ -1,11 +1,12 @@
-package com.rishiraj.bitbybit.dto;
+package com.rishiraj.bitbybit.dto.Course;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Chapter;
+import lombok.Builder;
 import lombok.Data;
 import org.bson.types.ObjectId;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /*
@@ -18,12 +19,17 @@ that the frontend sends.
 
  */
 @Data
-public class CourseDto {
-
-
+@Builder
+public class CourseDtoWithEnrolledUsers {
+    private ObjectId courseId;
     private String courseName;
-
     private String courseDescription;
     private String courseCategory;
-    private List<ChapterDto> chapters;
+    private List<Chapter> chapters;
+    private int numberOfEnrolls;
+    private LocalDateTime createdAt;
+    private ObjectId createdBy;
+    private String courseImage;
+    private int votes;
+    private List<UserDto> enrolledBy;
 }

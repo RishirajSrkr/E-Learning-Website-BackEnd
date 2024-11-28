@@ -1,6 +1,6 @@
 package com.rishiraj.bitbybit.services;
 
-import com.rishiraj.bitbybit.dto.CourseDto;
+import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.entity.Course;
 import org.bson.types.ObjectId;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,8 +17,6 @@ public interface CourseServices {
     //get all courses uploaded by a user
     List<Course> getAllCourseUploadedByUser(ObjectId userId) throws Exception;
 
-    //get all courses enrolled by a user
-    List<Course> getAllCoursesEnrolledByUser(String email);
 
     //create a new course
     Course createCourse(CourseDto course, MultipartFile courseImage, String email) throws IOException;

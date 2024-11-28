@@ -80,7 +80,7 @@ public class VotingServiceImpl {
         Map<Object, Object> voteMap = redisTemplate.opsForHash().entries("courseVotes");
         voteMap.forEach((key, value) -> {
             Course course = courseRepository.findById(new ObjectId((String) key)).orElseThrow();
-            course.setVote((Integer) value);
+            course.setVotes((Integer) value);
             courseRepository.save(course);
         });
 

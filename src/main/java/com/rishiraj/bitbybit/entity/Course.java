@@ -1,9 +1,9 @@
 package com.rishiraj.bitbybit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -37,12 +37,9 @@ public class Course implements Comparable<Course> {
     //id of user who created the course
     private ObjectId createdBy;
 
-    private int vote;
+    private int votes;
 
     private int numberOfEnrolls;
-
-    @DBRef
-    private List<User> enrolledBy;
 
     private LocalDateTime createdAt;
 
@@ -58,8 +55,8 @@ public class Course implements Comparable<Course> {
 
     @Override
     public int compareTo(Course o) {
-        if(this.getVote() > o.getVote()) return -1;
-        else if(this.getVote() < o.getVote()) return 1;
+        if(this.getVotes() > o.getVotes()) return -1;
+        else if(this.getVotes() < o.getVotes()) return 1;
         else return 0;
     }
 }

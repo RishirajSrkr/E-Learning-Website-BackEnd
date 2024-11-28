@@ -3,8 +3,9 @@ package com.rishiraj.bitbybit.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
+import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
-import com.rishiraj.bitbybit.dto.UserDto;
+import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.implementations.CourseServicesImpl;
@@ -15,7 +16,6 @@ import com.rishiraj.bitbybit.repositories.UserRepository;
 import com.rishiraj.bitbybit.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -31,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.*;
 import java.util.*;
 
 @RestController
@@ -149,17 +148,16 @@ public class PublicControllers {
     @GetMapping("/all-courses")
     public ResponseEntity<?> getAllCourses() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        log.info("email is :: {} ", email);
+
+        //if no user is logged in
+        if(email.equals("anonymousUser") || email.isEmpty()) return new ResponseEntity<>( courseRepository.findAll(), HttpStatus.OK);
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found"));
+
         try {
-            /*
-            we have filtered out the courses uploaded and enrolled by the user in service layer
-             */
-            List<Course> coursesNotUploadedByUser = courseServices.getAllCourses(email);
 
+            List<Course> coursesNotUploadedByUser = courseServices.getAllCourses(user);
 
-             /*
-            I was having problem in accessing course id in frontend so sending course id in a more descriptive way here as string
-             */
             Map<String, Course> responseToSend = new HashMap<>();
             for (Course course : coursesNotUploadedByUser) {
                 responseToSend.put(course.getId().toString(), course);
