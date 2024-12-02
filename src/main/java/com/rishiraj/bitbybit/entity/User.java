@@ -24,7 +24,9 @@ import java.util.Set;
 @Builder
 public class User {
     @Id
+    @Indexed
     private ObjectId id;
+
     @NotBlank(message = "Name cannot be blank")
     private String name;
 

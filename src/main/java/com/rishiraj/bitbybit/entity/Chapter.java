@@ -1,5 +1,6 @@
 package com.rishiraj.bitbybit.entity;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -15,9 +16,9 @@ import java.time.LocalDateTime;
 public class Chapter {
     @Id
     private ObjectId id;
-    @NonNull
+    @NotNull
     private String chapterName;
-    @NonNull
+    @NotNull
     private String chapterContent;
     private LocalDateTime createdAt;
 

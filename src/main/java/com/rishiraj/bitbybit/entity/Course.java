@@ -1,9 +1,13 @@
 package com.rishiraj.bitbybit.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -20,35 +24,36 @@ import java.util.List;
 @Builder
 public class Course implements Comparable<Course> {
     @Id
+    @Indexed
     private ObjectId id;
-    @NonNull
+
+    @NotBlank
+    @Size(max = 100)
+    @Indexed
     private String courseName;
-    @NonNull
+
+    @NotBlank
+    @Size(max = 1000)
     private String courseDescription;
 
-    /*
-    the client doesn't have to add this in the course form, we will add this on the server side based on the currently logged-in user
-     */
     private String instructorName;
 
-    @NonNull
+    @NotBlank
     private String courseCategory;
 
-    //id of user who created the course
     private ObjectId createdBy;
 
+    @Indexed(name = "votes_index", direction = IndexDirection.DESCENDING)
     private int votes;
 
     private int numberOfEnrolls;
 
     private LocalDateTime createdAt;
 
-    // to store the list of chapters of this course
     @DBRef
     private List<Chapter> chapters = new ArrayList<>();
 
-
-    // for storing course thumbnail image
+    @NotBlank
     private String imageUrl;
 
 
