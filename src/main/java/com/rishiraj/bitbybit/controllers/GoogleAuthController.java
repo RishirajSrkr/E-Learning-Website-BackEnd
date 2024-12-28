@@ -48,7 +48,8 @@ public class GoogleAuthController {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
-
+    @Value("${frontend}")
+    private String frontend;
     @GetMapping("/callback")
     public ResponseEntity<?> handleGoogleCallback(@RequestParam String code) {
         try {
@@ -59,7 +60,7 @@ public class GoogleAuthController {
             body.add("code", code);
             body.add("client_id", clientId);
             body.add("client_secret", clientSecret);
-            body.add("redirect_uri", "http://localhost:5173/auth/callback");
+            body.add("redirect_uri", frontend+"/auth/callback");
             body.add("grant_type", "authorization_code");
 
 
