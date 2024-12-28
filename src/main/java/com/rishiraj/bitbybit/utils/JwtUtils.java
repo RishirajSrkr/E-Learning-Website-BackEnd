@@ -32,9 +32,6 @@ public class JwtUtils {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private BlacklistedTokenRepository blacklistedTokenRepository;
-
     @Value("${jwt.secretKey}")
     private String secretKey;
 
@@ -73,14 +70,12 @@ public class JwtUtils {
     }
 
     private Claims extractAllClaims(String jwt) {
-        log.info("INSIDE EXTRACT ALL CLAIMS");
+
         Claims payload = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(jwt)
                 .getPayload();
-
-        log.info("LEAVING EXTRACT ALL CLAIMS");
 
         return payload;
 
@@ -114,23 +109,6 @@ public class JwtUtils {
         }
         return jwt;
     }
-
-    public void blacklistToken(String token, LocalDateTime expiryDate) {
-        BlacklistedToken blacklistedToken = new BlacklistedToken(token, expiryDate);
-        blacklistedTokenRepository.save(blacklistedToken);
-    }
-
-    public boolean isTokenBlackListed(String jwt) {
-        return blacklistedTokenRepository.findByToken(jwt).isPresent();
-    }
-
-    public void removeExpiredTokensFromDatabase() {
-        List<BlacklistedToken> expiredBlacklistedTokens = blacklistedTokenRepository.findAll().stream()
-                .filter(token -> token.getExpiryDate().isBefore(LocalDateTime.now()))
-                .collect(Collectors.toList());
-        blacklistedTokenRepository.deleteAll(expiredBlacklistedTokens);
-    }
-
 
     public LocalDateTime convertDateToLocalDateTime(String token) {
         Claims claims = extractAllClaims(token);

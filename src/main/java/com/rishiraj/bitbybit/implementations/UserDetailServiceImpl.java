@@ -31,8 +31,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
 
         Optional<User> userOptional = userRepository.findByEmail(email);
-        // Check if user is present, otherwise throw exception
-        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("Email not found : " + email));
+        if(userOptional.isEmpty()) return null;
+        User user = userOptional.get();
 
         // Convert roles to GrantedAuthority
         List<GrantedAuthority> authorityList = user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toList());

@@ -2,6 +2,7 @@ package com.rishiraj.bitbybit.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rishiraj.bitbybit.apiResponses.ApiResponse;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
 import com.rishiraj.bitbybit.dto.ChapterDto;
@@ -12,6 +13,7 @@ import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.implementations.CourseServicesImpl;
 import com.rishiraj.bitbybit.implementations.VotingServiceImpl;
 import com.rishiraj.bitbybit.repositories.UserRepository;
+import com.rishiraj.bitbybit.utils.ApiRateLimiter;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +37,18 @@ public class CourseControllers {
 
     private final CourseServicesImpl courseServices;
     private final UserRepository userRepository;
+    private final VotingServiceImpl votingService;
+    private final ApiRateLimiter apiRateLimiter;
 
-    @Autowired
-    private VotingServiceImpl votingService;
-
-    public CourseControllers(CourseServicesImpl courseServices, UserRepository userRepository) {
+    public CourseControllers(CourseServicesImpl courseServices,
+                             UserRepository userRepository,
+                             ApiRateLimiter apiRateLimiter,
+                             VotingServiceImpl votingService
+                             ) {
         this.courseServices = courseServices;
         this.userRepository = userRepository;
+        this.votingService = votingService;
+        this.apiRateLimiter = apiRateLimiter;
     }
 
 
@@ -52,13 +59,17 @@ public class CourseControllers {
      */
 
     @PostMapping("/create")
-    public ResponseEntity<Course> addCourse(
+    public ResponseEntity<?> addCourse(
             @RequestPart("courseDto") String courseDtoJson,
             @RequestPart(value = "file") MultipartFile file,
             @RequestPart(value = "chapters") String chapterJson
     ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
+
+        if(!apiRateLimiter.isAllowed(email)){
+           return new ResponseEntity<>("Too many requests - try again later", HttpStatus.TOO_MANY_REQUESTS);
+        }
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();

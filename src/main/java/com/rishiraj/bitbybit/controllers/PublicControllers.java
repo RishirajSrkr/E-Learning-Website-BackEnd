@@ -13,6 +13,7 @@ import com.rishiraj.bitbybit.implementations.UserDetailServiceImpl;
 import com.rishiraj.bitbybit.implementations.UserServicesImpl;
 import com.rishiraj.bitbybit.repositories.CourseRepository;
 import com.rishiraj.bitbybit.repositories.UserRepository;
+import com.rishiraj.bitbybit.utils.ApiRateLimiter;
 import com.rishiraj.bitbybit.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,6 @@ import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,18 +43,24 @@ public class PublicControllers {
     private final JwtUtils jwtUtils;
     private final UserServicesImpl userServices;
     private final CourseRepository courseRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private CourseServicesImpl courseServices;
+    private final UserRepository userRepository;
+    private final CourseServicesImpl courseServices;
 
 
-    public PublicControllers(UserServicesImpl userServices, JwtUtils jwtUtils, AuthenticationManager authenticationManager, UserDetailServiceImpl userDetailService, CourseRepository courseRepository) {
+    public PublicControllers(UserServicesImpl userServices,
+                             JwtUtils jwtUtils,
+                             AuthenticationManager authenticationManager,
+                             UserDetailServiceImpl userDetailService,
+                             CourseRepository courseRepository,
+                             UserRepository userRepository,
+                             CourseServicesImpl courseServices) {
         this.userServices = userServices;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
         this.userDetailService = userDetailService;
         this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
+        this.courseServices = courseServices;
     }
 
 
@@ -82,9 +88,11 @@ public class PublicControllers {
 
 
             return new ResponseEntity<>(createdUser, HttpStatus.OK);
-        } catch (UserCreationException e) {
+        } catch (
+                UserCreationException e) {
             return new ResponseEntity<>("Email already exists.", HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -113,34 +121,16 @@ public class PublicControllers {
             log.info("----------------------------------------");
 
             return new ResponseEntity<>(responseToSend, HttpStatus.OK);
-        } catch (BadCredentialsException e) {
+        } catch (
+                BadCredentialsException e) {
             return new ResponseEntity<>("Invalid email or password", HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>("An error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        String jwt = jwtUtils.getJwtFromRequest(request);
-        log.info("INSIDE LOGOUT ::  {} ", jwt);
-
-        if (jwt != null) {
-            try {
-                jwtUtils.blacklistToken(jwt, jwtUtils.convertDateToLocalDateTime(jwt));
-                return new ResponseEntity<>("Logout successful", HttpStatus.OK);
-            } catch (ExpiredJwtException e) {
-                log.warn("JWT expired. User is logged out");
-                return new ResponseEntity<>("Token has expired. You are logged out.", HttpStatus.UNAUTHORIZED);
-            } catch (Exception e) {
-                log.error("Error during logout: {}", e.getMessage());
-                return new ResponseEntity<>("Logout failed", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            return new ResponseEntity<>("No token found", HttpStatus.BAD_REQUEST);
-        }
-    }
 
     /*
     get all the courses, this is public since we want a user to be able to see all courses without even login or registration
@@ -149,23 +139,29 @@ public class PublicControllers {
     public ResponseEntity<?> getAllCourses() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        //if no user is logged in
-        if(email.equals("anonymousUser") || email.isEmpty()) return new ResponseEntity<>( courseRepository.findAll(), HttpStatus.OK);
+        Map<String, Course> responseToSend = new HashMap<>();
+
+        //if no user is logged in, return all the courses
+        if (email.equals("anonymousUser") || email.isEmpty()) {
+            List<Course> allCourses = courseRepository.findAll();
+            for (Course course : allCourses) {
+                responseToSend.put(course.getId().toString(), course);
+            }
+            return new ResponseEntity<>(responseToSend, HttpStatus.OK);
+        }
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found"));
 
         try {
-
             List<Course> coursesNotUploadedByUser = courseServices.getAllCourses(user);
 
-            Map<String, Course> responseToSend = new HashMap<>();
             for (Course course : coursesNotUploadedByUser) {
                 responseToSend.put(course.getId().toString(), course);
             }
 
             return new ResponseEntity<>(responseToSend, HttpStatus.OK);
-
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
@@ -198,7 +194,8 @@ public class PublicControllers {
 
             log.info("response {} ", response);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -210,9 +207,11 @@ public class PublicControllers {
         try {
             courseServices.incrementNumberOfEnrolls(courseId);
             return new ResponseEntity<>("Incremented Successfully.", HttpStatus.OK);
-        } catch (CourseNotFoundException e) {
+        } catch (
+                CourseNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -226,7 +225,8 @@ public class PublicControllers {
         try {
             List<Course> topVotedCourses = courseServices.getTopVotedCourses();
             return new ResponseEntity<>(topVotedCourses, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }

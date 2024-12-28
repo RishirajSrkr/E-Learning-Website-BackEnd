@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -50,19 +49,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
 
-        /*
-        check if incoming jwt in request header is blacklisted or not, if so return
-         */
-        if (jwt != null && jwtUtils.isTokenBlackListed(jwt)) {
-            log.warn("The token :: {} has been blacklisted.", jwt);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("Token has been blacklisted");
-            /*
-              Clear the security context to ensure no authentication data is left
-             */
-            SecurityContextHolder.clearContext();
-            return; //stopping further processing
-        }
 
         if (jwt != null && jwtUtils.validateToken(jwt)) {
 
@@ -75,11 +61,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-//            log.info("----------------------------------------");
-//            log.info("authentication {} ", authentication);
-//            log.info("----------------------------------------");
 
         } else {
             SecurityContextHolder.clearContext();

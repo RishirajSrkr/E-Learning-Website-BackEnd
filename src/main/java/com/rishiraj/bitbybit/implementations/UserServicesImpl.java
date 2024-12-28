@@ -113,18 +113,6 @@ public class UserServicesImpl implements UserService {
     }
 
 
-    public Optional<User> getUserById(ObjectId userId) {
-        return userRepository.findById(userId);
-    }
-
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public void deleteUserById(ObjectId userId) {
-        userRepository.deleteById(userId);
-    }
-
     //get all the courses that are uploaded by the user
     public List<Course> getAllCoursesUploadedByUser(ObjectId userId) throws Exception {
         return courseServices.getAllCourseUploadedByUser(userId);

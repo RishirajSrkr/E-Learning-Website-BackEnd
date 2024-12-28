@@ -34,9 +34,6 @@ public class SpringSecurityConfig {
     private final JwtFilter jwtFilter;
 
 
-    @Autowired
-    private JwtUtils jwtUtils;
-
     public SpringSecurityConfig(UserDetailServiceImpl userDetailServiceImpl, JwtFilter jwtFilter) {
         this.userDetailServiceImpl = userDetailServiceImpl;
         this.jwtFilter = jwtFilter;

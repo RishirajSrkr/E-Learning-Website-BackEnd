@@ -15,13 +15,6 @@ import java.util.Optional;
 public interface UserService {
     void updateUserData (User user, RegisterUserDto registerUserDto, MultipartFile file) throws Exception;
 
-    Optional<User> getUserById(ObjectId userId);
-
-    Optional<User> getUserByEmail(String email);
-
-    void deleteUserById(ObjectId userId);
-
-
     User createUser(RegisterUserDto registerUserDto, MultipartFile profileImage) throws Exception;
 
     List<UserDto> getAllContributor();

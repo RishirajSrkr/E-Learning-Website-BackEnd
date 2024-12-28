@@ -10,6 +10,15 @@ spring:
     port: 12716
     password: q4PCoaO5ZAshNoKpI3YcuV9iDwzKCLwC
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 566391648176-repblbg2o63uink35639mmfhldam5145.apps.googleusercontent.com
+            client-secret: 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
+
+
 server:
   port: 8080
 
