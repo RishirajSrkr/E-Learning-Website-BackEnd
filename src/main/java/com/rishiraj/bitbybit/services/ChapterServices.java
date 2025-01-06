@@ -9,7 +9,7 @@ import java.util.Optional;
 @Service
 public interface ChapterServices {
 
-    public void addChapter(Chapter newChapter, ObjectId courseId);
+    public void addChapter(Chapter newChapter, ObjectId resourceId);
 
     public Optional<Chapter> findChapterById(ObjectId chapterId) ;
 }

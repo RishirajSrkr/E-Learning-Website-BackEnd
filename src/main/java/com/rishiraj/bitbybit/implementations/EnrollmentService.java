@@ -1,7 +1,6 @@
 package com.rishiraj.bitbybit.implementations;
 
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
-import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.Enrollment;
 import com.rishiraj.bitbybit.entity.User;
@@ -12,7 +11,6 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;

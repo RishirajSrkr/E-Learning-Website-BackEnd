@@ -61,7 +61,7 @@ public class SpringSecurityConfig {
                 .logout(logout -> logout.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/course/**", "/comments/**").authenticated()
+                        .requestMatchers("/course/**", "/video-resource/**", "/comments/**").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().permitAll())
                 .cors(x -> x.configurationSource(corsConfigurationSource()))

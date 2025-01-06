@@ -1,7 +1,6 @@
 package com.rishiraj.bitbybit.repositories;
 
 import com.rishiraj.bitbybit.entity.Course;
-import com.rishiraj.bitbybit.entity.User;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

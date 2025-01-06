@@ -2,7 +2,6 @@ package com.rishiraj.bitbybit.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
-import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;

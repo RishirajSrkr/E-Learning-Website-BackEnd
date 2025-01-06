@@ -1,7 +1,6 @@
 package com.rishiraj.bitbybit.implementations;
 
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
-import com.rishiraj.bitbybit.dto.Course.CourseDto;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;

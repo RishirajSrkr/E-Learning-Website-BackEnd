@@ -3,7 +3,6 @@ package com.rishiraj.bitbybit.controllers;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
 import com.rishiraj.bitbybit.entity.Course;
-import com.rishiraj.bitbybit.entity.Enrollment;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.implementations.EnrollmentService;
 import com.rishiraj.bitbybit.repositories.CourseRepository;
@@ -22,8 +21,6 @@ import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/enrollments")

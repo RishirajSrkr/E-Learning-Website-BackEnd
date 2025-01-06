@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.*;
 
-public interface CourseServices {
+public interface ResourceService {
 
     Optional<Course> findCourseById(ObjectId courseId);
 

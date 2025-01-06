@@ -15,12 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminControllers {
 
     private static final Logger log = LoggerFactory.getLogger(AdminControllers.class);
-    private final UserServicesImpl userServices;
-
-    public AdminControllers(UserServicesImpl userServices) {
-        this.userServices = userServices;
-    }
-
 
 
     @GetMapping

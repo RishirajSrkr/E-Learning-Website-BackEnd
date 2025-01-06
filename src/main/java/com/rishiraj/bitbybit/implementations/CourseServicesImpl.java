@@ -9,18 +9,16 @@ import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.dto.User.UserWithCoursesDto;
 import com.rishiraj.bitbybit.entity.Chapter;
 import com.rishiraj.bitbybit.entity.Course;
-import com.rishiraj.bitbybit.entity.Enrollment;
 import com.rishiraj.bitbybit.entity.User;
 import com.rishiraj.bitbybit.repositories.ChapterRepository;
 import com.rishiraj.bitbybit.repositories.CourseRepository;
 import com.rishiraj.bitbybit.repositories.EnrollmentRepository;
 import com.rishiraj.bitbybit.repositories.UserRepository;
-import com.rishiraj.bitbybit.services.CourseServices;
+import com.rishiraj.bitbybit.services.ResourceService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,10 +28,9 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
-public class CourseServicesImpl implements CourseServices {
+public class CourseServicesImpl implements ResourceService {
 
     private static final Logger log = LoggerFactory.getLogger(CourseServicesImpl.class);
     private final CourseRepository courseRepository;
@@ -52,12 +49,12 @@ public class CourseServicesImpl implements CourseServices {
         this.imageUploadService = imageUploadService;
     }
 
-    public Optional<Course> findCourseById(ObjectId courseId) {
-        return courseRepository.findById(courseId);
+    public Optional<Course> findCourseById(ObjectId resourceId) {
+        return courseRepository.findById(resourceId);
     }
 
-    public void updateCourse(Course course) {
-        courseRepository.save(course);
+    public void updateCourse(Course resource) {
+        courseRepository.save(resource);
     }
 
 
