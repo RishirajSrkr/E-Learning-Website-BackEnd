@@ -28,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -63,7 +64,8 @@ public class PublicControllers {
 
     @GetMapping("/health-check")
     public ResponseEntity<String> healthCheck() {
-        return new ResponseEntity<>("Health Check :: OK", HttpStatus.OK);
+        String message = "Health checked : " + LocalDateTime.now();
+        return new ResponseEntity<>(message , HttpStatus.OK);
     }
 
 
