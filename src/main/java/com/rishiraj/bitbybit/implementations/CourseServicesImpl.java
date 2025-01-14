@@ -64,7 +64,8 @@ public class CourseServicesImpl implements ResourceService {
         try {
             return courseRepository.findAll().stream().filter(course -> course.getCreatedBy().equals(userId)).collect(Collectors.toList());
 
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             throw new Exception();
         }
 
@@ -198,9 +199,11 @@ public class CourseServicesImpl implements ResourceService {
             } else {
                 throw new CourseNotFoundException("Course not found with ID: " + courseId);
             }
-        } catch (CourseNotFoundException e) {
+        } catch (
+                CourseNotFoundException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             throw new RuntimeException("An error occurred while incrementing enrolls for course ID: " + courseId, e);
         }
 
@@ -211,16 +214,21 @@ public class CourseServicesImpl implements ResourceService {
     If a user is logged in and has uploaded some course or some enrolled courses, do not show those courses in 'all courses'
     If a user is not logged in than show all courses here
      */
-    public List<Course> getAllCourses(User user) throws Exception {
+    public List<Course> getFilteredCourses(String email) throws Exception {
 
         List<Course> allCourses = courseRepository.findAll();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found!"));
 
         //removing the courses uploaded by the user
         List<Course> filteredCourses = allCourses.stream().filter(courses -> !courses.getCreatedBy().equals(user.getId())).collect(Collectors.toList());
 
+
         //removing the courses enrolled by the user
-        List<Course> coursesEnrolledByTheUser = enrollmentRepository.findAll().stream().filter(enrollment -> enrollment.getUser().getId().equals(user.getId())).map(enrollment -> enrollment.getCourse()).collect(Collectors.toList());
-        filteredCourses.removeAll(coursesEnrolledByTheUser);
+        List<Course> coursesEnrolledByUser = enrollmentRepository.findAll().stream().filter(enrollment -> enrollment.getUser().getId().equals(user.getId())).map(enrollment -> enrollment.getCourse()).collect(Collectors.toList());
+        if (!coursesEnrolledByUser.isEmpty()) {
+            filteredCourses.removeAll(coursesEnrolledByUser);
+            return filteredCourses;
+        }
 
         return filteredCourses;
     }
@@ -235,7 +243,8 @@ public class CourseServicesImpl implements ResourceService {
         Collections.sort(allCourses);
 
         //if there are less than 2 courses in database, return all 2 without doing "subList(0,3)
-        if (allCourses.size() < 3) return allCourses;
+        if (allCourses.size() < 3)
+            return allCourses;
 
         //else return top 3, i.e. subList(0,3)
         return allCourses.subList(0, 3);

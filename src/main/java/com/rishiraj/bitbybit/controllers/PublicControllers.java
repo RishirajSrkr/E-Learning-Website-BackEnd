@@ -3,7 +3,6 @@ package com.rishiraj.bitbybit.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rishiraj.bitbybit.customExceptions.CourseNotFoundException;
 import com.rishiraj.bitbybit.customExceptions.UserCreationException;
-import com.rishiraj.bitbybit.customExceptions.UserNotFoundException;
 import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
@@ -65,7 +64,7 @@ public class PublicControllers {
     @GetMapping("/health-check")
     public ResponseEntity<String> healthCheck() {
         String message = "Health checked : " + LocalDateTime.now();
-        return new ResponseEntity<>(message , HttpStatus.OK);
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
 
@@ -149,21 +148,22 @@ public class PublicControllers {
             return new ResponseEntity<>(responseToSend, HttpStatus.OK);
         }
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found"));
-
         try {
-            List<Course> coursesNotUploadedByUser = courseServices.getAllCourses(user);
+            List<Course> filteredCourses = courseServices.getFilteredCourses(email);
 
-            for (Course course : coursesNotUploadedByUser) {
+            log.info("filteredCourses {} ", filteredCourses);
+
+            for (Course course : filteredCourses) {
                 responseToSend.put(course.getId().toString(), course);
             }
-
             return new ResponseEntity<>(responseToSend, HttpStatus.OK);
+
         } catch (
                 Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
+
 
     /*
     get a course by id
@@ -191,7 +191,6 @@ public class PublicControllers {
                 response.put(user.getUserId().toString(), user);
             }
 
-            log.info("response {} ", response);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (
                 Exception e) {

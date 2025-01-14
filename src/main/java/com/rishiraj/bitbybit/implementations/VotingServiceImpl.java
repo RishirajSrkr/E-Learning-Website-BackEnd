@@ -89,7 +89,7 @@ public class VotingServiceImpl {
             userRepository.save(user);
         });
 
-        log.info("Saved to database :: {} ", LocalDateTime.now());
+        log.info("Votes updated to Database :: {} ", LocalDateTime.now());
 
         redisTemplate.delete(List.of("courseVotes", "userTotalVotes"));
 

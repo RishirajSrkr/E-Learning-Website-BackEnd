@@ -95,7 +95,6 @@ public class UserControllers {
             @RequestPart(value = "registerUserDto", required = false) String registerUserDtoJson,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        log.info("here");
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();

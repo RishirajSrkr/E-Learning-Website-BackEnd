@@ -13,8 +13,8 @@ public class ApiRateLimiter {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final int MAX_REQUEST = 1;
-    private static final int TIME_WINDOW = 1; // 1 request in 1 minute
+    private static final int MAX_REQUEST = 5;
+    private static final int TIME_WINDOW = 60; // 1 request in 1 minute
 
     public boolean isAllowed(String userEmail) {
         String key = "rate-limit:" + userEmail;
