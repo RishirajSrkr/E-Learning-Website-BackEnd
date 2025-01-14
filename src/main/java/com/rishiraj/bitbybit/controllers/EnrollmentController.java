@@ -39,9 +39,9 @@ public class EnrollmentController {
     // ENROLL A USER TO A COURSE
     @PostMapping("/{courseId}")
     public ResponseEntity<String> enrollUser(@PathVariable ObjectId courseId){
-        log.info("course ID to enroll :: {} ", courseId);
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found with email :: " + email));
+
         try{
             enrollmentService.enrollUserInCourse(user, courseId);
             return new ResponseEntity<>("Successfully Enrolled!", HttpStatus.OK);
@@ -66,6 +66,8 @@ public class EnrollmentController {
     public ResponseEntity<?> getEnrolledCourses() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found with email :: " + email));
+
+        log.info("user {} ", user);
 
         try{
             List<Course> enrolledCourses = enrollmentService.getEnrolledCourses(user.getId());
