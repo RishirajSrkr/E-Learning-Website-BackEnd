@@ -58,7 +58,7 @@ public class CourseControllers {
     @PostMapping("/create")
     public ResponseEntity<?> addCourse(
             @RequestPart("courseDto") String courseDtoJson,
-            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart(required = false, value = "file") MultipartFile file,
             @RequestPart(value = "chapters") String chapterJson
     ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -84,11 +84,6 @@ public class CourseServicesImpl implements ResourceService {
         if (courseImage != null && !courseImage.isEmpty()) {
             Map uploadResult = imageUploadService.uploadFile(courseImage);
             imageUrl = (String) uploadResult.get("url");
-
-            log.info("----------------------------------------");
-            log.info("uploadResult {} ", uploadResult);
-            log.info("----------------------------------------");
-
         }
 
         //converting the CourseDto to actual course object
@@ -130,6 +125,7 @@ public class CourseServicesImpl implements ResourceService {
                         .chapterContent(chapterDto.getChapterContent())
                         .createdAt(LocalDateTime.now())
                         .courseId(savedCourse.getId())
+                        .videoLink(chapterDto.getVideoLink())
                         .build()
                 ).collect(Collectors.toList());
 

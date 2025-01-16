@@ -172,6 +172,7 @@ public class PublicControllers {
     public ResponseEntity<Course> getCourseById(@PathVariable ObjectId id) {
         Optional<Course> optionalCourse = courseRepository.findById(id);
         if (optionalCourse.isPresent()) {
+            log.info("{}", optionalCourse.get());
             return new ResponseEntity<>(optionalCourse.get(), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

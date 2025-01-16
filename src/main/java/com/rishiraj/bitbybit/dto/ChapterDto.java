@@ -16,4 +16,5 @@ public class ChapterDto {
     private String chapterName;
     private String chapterContent;
     private ObjectId courseId;
+    private String videoLink;
 }

@@ -20,11 +20,7 @@ public class Chapter {
     private String chapterName;
     @NotNull
     private String chapterContent;
+    private String videoLink;
     private LocalDateTime createdAt;
-
-    /*
-    in which course does this chapter belongs, this is needed to delete the chapter when the course is deleted,
-    because in Mongo db we don't have on delete cascade
-     */
     private ObjectId courseId;
 }
