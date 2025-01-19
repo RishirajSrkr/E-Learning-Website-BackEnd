@@ -38,6 +38,7 @@ public class UserControllers {
     }
 
 
+
     /* get logged-in user info --- we need this after login to fetch the user specific info and store in context */
     @GetMapping("/profile")
     public ResponseEntity<UserDto> getUserById() {
@@ -106,6 +107,10 @@ public class UserControllers {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email :: " + email + " not found"));
 
+            //if user is trying to update the email
+            if(!user.getEmail().equals(registerUserDto.getEmail())){
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
             userServices.updateUserData(user, registerUserDto, file);
             return new ResponseEntity<>("Updated Successfully", HttpStatus.OK);
         } catch (Exception e) {
@@ -129,6 +134,14 @@ public class UserControllers {
         catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+
+    @GetMapping("/{email}")
+    public ResponseEntity<Map<String, Object>> getUserProfileImage(@PathVariable String email){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email : " + email + " not found!"));
+
+        return new ResponseEntity<>(Map.of("profileImage", user.getProfileImageUrl(), "name", user.getName(), "email", user.getEmail()), HttpStatus.OK);
     }
 
 

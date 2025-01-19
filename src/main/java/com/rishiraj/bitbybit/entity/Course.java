@@ -33,7 +33,7 @@ public class Course implements Comparable<Course> {
     @Size(max = 1000)
     private String courseDescription;
 
-    private String instructorName;
+    private String instructorEmail;
 
     @NotBlank
     private String courseCategory;

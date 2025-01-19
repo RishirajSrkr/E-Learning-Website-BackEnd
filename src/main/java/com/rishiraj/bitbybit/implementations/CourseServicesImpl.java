@@ -86,6 +86,7 @@ public class CourseServicesImpl implements ResourceService {
             imageUrl = (String) uploadResult.get("url");
         }
 
+        log.info("user email {}", email);
         //converting the CourseDto to actual course object
         Course course = Course.builder()
                 .courseName(courseDto.getCourseName())
@@ -93,7 +94,7 @@ public class CourseServicesImpl implements ResourceService {
                 .courseCategory(courseDto.getCourseCategory())
                 .createdAt(LocalDateTime.now())
                 .createdBy(user.getId())
-                .instructorName(user.getName())
+                .instructorEmail(user.getEmail())
                 .votes(0)
                 .numberOfEnrolls(0)
                 .imageUrl(imageUrl)

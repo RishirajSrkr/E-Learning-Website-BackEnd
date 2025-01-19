@@ -80,11 +80,6 @@ public class PublicControllers {
             RegisterUserDto registerUserDto = objectMapper.readValue(registerUserDtoJson, RegisterUserDto.class);
             User createdUser = userServices.createUser(registerUserDto, userProfileImage);
 
-            log.info("----------------------------------------");
-            log.info("Created User :: {} ", createdUser);
-            log.info("----------------------------------------");
-
-
             return new ResponseEntity<>(createdUser, HttpStatus.OK);
         } catch (
                 UserCreationException e) {
@@ -102,9 +97,6 @@ public class PublicControllers {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
         try {
             Authentication authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-            log.info("----------------------------------------");
-            log.info("authenticate {} ", authenticate);
-            log.info("----------------------------------------");
             String jwt = jwtUtils.generateToken(user.getEmail());
 
             /*
@@ -113,11 +105,6 @@ public class PublicControllers {
 
             Map<String, Object> responseToSend = new HashMap<>();
             responseToSend.put("jwtToken", jwt);
-
-            log.info("----------------------------------------");
-            log.info(jwt);
-            log.info("----------------------------------------");
-
             return new ResponseEntity<>(responseToSend, HttpStatus.OK);
         } catch (
                 BadCredentialsException e) {
@@ -150,9 +137,6 @@ public class PublicControllers {
 
         try {
             List<Course> filteredCourses = courseServices.getFilteredCourses(email);
-
-            log.info("filteredCourses {} ", filteredCourses);
-
             for (Course course : filteredCourses) {
                 responseToSend.put(course.getId().toString(), course);
             }
@@ -172,7 +156,6 @@ public class PublicControllers {
     public ResponseEntity<Course> getCourseById(@PathVariable ObjectId id) {
         Optional<Course> optionalCourse = courseRepository.findById(id);
         if (optionalCourse.isPresent()) {
-            log.info("{}", optionalCourse.get());
             return new ResponseEntity<>(optionalCourse.get(), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

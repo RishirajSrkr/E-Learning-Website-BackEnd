@@ -87,7 +87,6 @@ public class UserServicesImpl implements UserService {
     public void updateUserData(User user, RegisterUserDto registerUserDto, MultipartFile image) throws IOException {
 
         user.setName(registerUserDto.getName() != null && !registerUserDto.getName().isEmpty() ? registerUserDto.getName() : user.getName());
-        user.setEmail(registerUserDto.getEmail() != null && !registerUserDto.getEmail().isEmpty() ? registerUserDto.getEmail() : user.getEmail());
         user.setBio(registerUserDto.getBio() != null && !registerUserDto.getBio().isEmpty() ? registerUserDto.getBio() : user.getBio());
 
         //hash the password before saving
