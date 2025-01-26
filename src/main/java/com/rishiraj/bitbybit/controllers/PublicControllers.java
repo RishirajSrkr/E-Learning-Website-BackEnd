@@ -127,25 +127,31 @@ public class PublicControllers {
         Map<String, Course> responseToSend = new HashMap<>();
 
         //if no user is logged in, return all the courses
-        if (email.equals("anonymousUser") || email.isEmpty()) {
-            List<Course> allCourses = courseRepository.findAll();
-            for (Course course : allCourses) {
-                responseToSend.put(course.getId().toString(), course);
-            }
-            return new ResponseEntity<>(responseToSend, HttpStatus.OK);
-        }
+//        if (email.equals("anonymousUser") || email.isEmpty()) {
+//            List<Course> allCourses = courseRepository.findAll();
+//            for (Course course : allCourses) {
+//                responseToSend.put(course.getId().toString(), course);
+//            }
+//            return new ResponseEntity<>(responseToSend, HttpStatus.OK);
+//        }
+//
+//        try {
+//            List<Course> filteredCourses = courseServices.getFilteredCourses(email);
+//            for (Course course : filteredCourses) {
+//                responseToSend.put(course.getId().toString(), course);
+//            }
+//            return new ResponseEntity<>(responseToSend, HttpStatus.OK);
+//
+//        } catch (
+//                Exception e) {
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        }
 
-        try {
-            List<Course> filteredCourses = courseServices.getFilteredCourses(email);
-            for (Course course : filteredCourses) {
-                responseToSend.put(course.getId().toString(), course);
-            }
-            return new ResponseEntity<>(responseToSend, HttpStatus.OK);
-
-        } catch (
-                Exception e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        List<Course> courses = courseRepository.findAll();
+        for(Course course : courses){
+            responseToSend.put(course.getId().toString(), course);
         }
+        return new ResponseEntity<>(responseToSend, HttpStatus.OK);
     }
 
 
@@ -203,10 +209,16 @@ public class PublicControllers {
    GET TOP VOTED COURSE -- TOP 3
     */
     @GetMapping("/top-voted")
-    public ResponseEntity<List<Course>> getTopVotedCourses() {
+    public ResponseEntity<Map<String, Course>> getTopVotedCourses() {
         try {
             List<Course> topVotedCourses = courseServices.getTopVotedCourses();
-            return new ResponseEntity<>(topVotedCourses, HttpStatus.OK);
+            Map<String, Course> response = new HashMap<>();
+
+            for(Course course : topVotedCourses){
+                response.put(course.getId().toString(), course);
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (
                 Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

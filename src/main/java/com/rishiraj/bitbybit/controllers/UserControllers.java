@@ -6,6 +6,7 @@ import com.rishiraj.bitbybit.dto.RegisterUserDto;
 import com.rishiraj.bitbybit.dto.User.UserDto;
 import com.rishiraj.bitbybit.entity.Course;
 import com.rishiraj.bitbybit.entity.User;
+import com.rishiraj.bitbybit.implementations.EnrollmentService;
 import com.rishiraj.bitbybit.implementations.UserServicesImpl;
 import com.rishiraj.bitbybit.repositories.UserRepository;
 import org.bson.types.ObjectId;
@@ -29,12 +30,14 @@ public class UserControllers {
 
     private final UserServicesImpl userServices;
     private final UserRepository userRepository;
+    private final EnrollmentService enrollmentService;
 
     public UserControllers(UserServicesImpl userServices,
-                           UserRepository userRepository
+                           UserRepository userRepository, EnrollmentService enrollmentService
     ) {
         this.userServices = userServices;
         this.userRepository = userRepository;
+        this.enrollmentService = enrollmentService;
     }
 
 
@@ -50,6 +53,7 @@ public class UserControllers {
                 .email(user.getEmail())
                 .profileImage(user.getProfileImageUrl())
                 .bio(user.getBio())
+                .enrolledCourses(enrollmentService.getEnrolledCoursesObjectIds(user.getId()))
                 .uploadedCourses(user.getUploadedCourses().size())
                 .build();
         log.info("userResponseToSendClient :: {}", userResponseToSendClient);

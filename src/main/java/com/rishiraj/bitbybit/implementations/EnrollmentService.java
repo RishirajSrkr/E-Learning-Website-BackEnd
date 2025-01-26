@@ -47,25 +47,28 @@ public class EnrollmentService {
 
     public List<User> getEnrolledUsers(ObjectId courseId) {
         List<Enrollment> enrollments = enrollmentRepository.findByCourse(courseId);
-        List<User> enrolledUser = enrollments.stream().map(enrollment -> enrollment.getUser()).collect(Collectors.toList());
-        return enrolledUser;
+        return enrollments.stream().map(enrollment -> enrollment.getUser()).collect(Collectors.toList());
 
     }
 
     public List<Course> getEnrolledCourses(ObjectId userId) {
         List<Enrollment> enrollments = enrollmentRepository.findByUser(userId);
-        List<Course> enrolledCourses = enrollments.stream().map(enrollment -> enrollment.getCourse()).collect(Collectors.toList());
-        return enrolledCourses;
+        return enrollments.stream().map(enrollment -> enrollment.getCourse()).collect(Collectors.toList());
 
     }
+
+    public List<String> getEnrolledCoursesObjectIds(ObjectId userId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByUser(userId);
+        return enrollments.stream().map(enrollment -> enrollment.getCourse().getId().toString()).collect(Collectors.toList());
+    }
+
 
     public void removeCourseFromEnrollment(User user, Course course) throws AccessDeniedException {
         //check if the course belongs to the user
         List<Enrollment> collect = enrollmentRepository.findByUser(user.getId()).stream().filter(enrollment -> enrollment.getCourse().getId().equals(course.getId())).collect(Collectors.toList());
-        if(collect.isEmpty()){
+        if (collect.isEmpty()) {
             throw new AccessDeniedException("You do not have the permission to perform the action!");
-        }
-        else{
+        } else {
             Enrollment enrollmentToRemove = collect.stream().findFirst().get();
             enrollmentRepository.delete(enrollmentToRemove);
 
