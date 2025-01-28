@@ -148,4 +148,5 @@ public class UserServicesImpl implements UserService {
                 .mapToInt(course -> course.getVotes())
                 .sum();
     }
+
 }

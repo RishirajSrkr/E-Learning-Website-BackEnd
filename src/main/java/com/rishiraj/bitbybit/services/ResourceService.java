@@ -12,7 +12,7 @@ public interface ResourceService {
 
     Optional<Course> findCourseById(ObjectId courseId);
 
-    void updateCourse(Course course);
+    Course updateCourse(Course course);
 
     //get all courses uploaded by a user
     List<Course> getAllCourseUploadedByUser(ObjectId userId) throws Exception;

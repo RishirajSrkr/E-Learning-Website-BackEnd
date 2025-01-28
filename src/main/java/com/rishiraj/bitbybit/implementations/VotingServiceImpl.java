@@ -42,12 +42,13 @@ public class VotingServiceImpl {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email : " + email + " not found"));
 
-        if (hasUserVoted(courseId, user.getId())) {
+        if (hasUserVoted(courseId, user)) {
             throw new IllegalStateException("User has already voted for this course.");
         }
 
         // Increment the vote count in Redis for the course
         redisTemplate.opsForHash().increment("courseVotes", courseId.toHexString(), 1);
+        log.info("Course votes updated in Redis: {}", redisTemplate.opsForHash().get("courseVotes", courseId.toHexString()));
 
         //Increment the total vote count in Redis for the user
         redisTemplate.opsForHash().increment("userTotalVotes", createdBy.toHexString(), 1);
@@ -55,7 +56,7 @@ public class VotingServiceImpl {
         // Track the user's vote and set TTL for 24 hours (each user's vote tracked individually)
         String userVoteKey = "userVote:" + courseId.toHexString() + ":" + user.getId().toHexString();
 
-        redisTemplate.opsForValue().set(userVoteKey, "voted", Duration.ofDays(1));
+        redisTemplate.opsForValue().set(userVoteKey, "voted", Duration.ofMinutes(1));
 
 
         //add the course in users votedCourse list
@@ -65,27 +66,30 @@ public class VotingServiceImpl {
 
     }
 
-    private boolean hasUserVoted(ObjectId courseId, ObjectId userId) {
-        String userVoteKey = "userVote:" + courseId.toHexString() + ":" + userId.toHexString();
-        return Boolean.TRUE.equals(redisTemplate.hasKey(userVoteKey));
+    private boolean hasUserVoted(ObjectId courseId, User user) {
+        String userVoteKey = "userVote:" + courseId.toHexString() + ":" + user.getId().toHexString();
+        Boolean b = redisTemplate.hasKey(userVoteKey);
+        log.info("ALREADY VOTED : {} ", b);
+        return b;
     }
 
 
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 60 * 1000)
     public void persistVotesToDatabase() {
-
         // Fetch all course votes from Redis and save them to the database
         Map<Object, Object> voteMap = redisTemplate.opsForHash().entries("courseVotes");
         voteMap.forEach((key, value) -> {
             Course course = courseRepository.findById(new ObjectId((String) key)).orElseThrow();
-            course.setVotes((Integer) value);
+            int existingVoteCount = course.getVotes();
+            course.setVotes( existingVoteCount + (Integer) value);
             courseRepository.save(course);
         });
 
         Map<Object, Object> userTotalVoteMap = redisTemplate.opsForHash().entries("userTotalVotes");
         userTotalVoteMap.forEach((key, value) -> {
             User user = userRepository.findById(new ObjectId(key.toString())).orElseThrow();
-            user.setTotalVotes((Integer)value);
+            int existingVoteCount = user.getTotalVotes();
+            user.setTotalVotes(existingVoteCount + (Integer)value);
             userRepository.save(user);
         });
 

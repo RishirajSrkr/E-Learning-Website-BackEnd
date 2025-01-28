@@ -53,10 +53,10 @@ public class CourseServicesImpl implements ResourceService {
         return courseRepository.findById(resourceId);
     }
 
-    public void updateCourse(Course resource) {
-        courseRepository.save(resource);
+    @Override
+    public Course updateCourse(Course course) {
+        return null;
     }
-
 
     /* GET THE COURSES UPLOADED BY A USER */
 
@@ -246,6 +246,8 @@ public class CourseServicesImpl implements ResourceService {
         //else return top 3, i.e. subList(0,3)
         return allCourses.subList(0, 3);
     }
+
+
 
 
     public CourseDto convertToCourseDto(Course course) {
