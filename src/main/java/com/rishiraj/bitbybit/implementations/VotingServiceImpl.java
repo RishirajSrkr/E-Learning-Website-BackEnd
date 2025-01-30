@@ -56,7 +56,7 @@ public class VotingServiceImpl {
         // Track the user's vote and set TTL for 24 hours (each user's vote tracked individually)
         String userVoteKey = "userVote:" + courseId.toHexString() + ":" + user.getId().toHexString();
 
-        redisTemplate.opsForValue().set(userVoteKey, "voted", Duration.ofMinutes(1));
+        redisTemplate.opsForValue().set(userVoteKey, "voted", Duration.ofDays(1));
 
 
         //add the course in users votedCourse list
